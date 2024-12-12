@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import TimerCss from "./Timer.module.css"
+
 const Timer = () => {
-  const [hours, setHours] = useState(0);
-  const [minutes, setMinutes] = useState(0);
-  const [seconds, setSeconds] = useState(0);
+  const [hours, setHours] = useState('');
+  const [minutes, setMinutes] = useState('');
+  const [seconds, setSeconds] = useState('');
   const [run, setRun] = useState(false);
+  const [complete, setComplete] = useState(false);
 
   useEffect(() => {
     let intervalId;
     if (run && (hours > 0 || minutes > 0 || seconds > 0)) {
+      setComplete(false);
       intervalId = setInterval(() => {
         if (seconds > 0) {
           setSeconds((seconds) => seconds - 1);
@@ -21,7 +24,9 @@ const Timer = () => {
           setSeconds(59);
         }
       }, 1000);
-    } else if (seconds === 0 && minutes === 0 && hours === 0) {
+    } else if (hours === 0 && minutes === 0 && seconds === 0) {
+      setRun(false);
+      setComplete(true);
       clearInterval(intervalId);
     }
 
@@ -31,6 +36,9 @@ const Timer = () => {
   const eventInput = (event) => {
     let value = parseInt(event.target.value, 10) || 0;
     const name = event.target.name;
+
+    setRun(false);
+    setComplete(false);
 
     if (name === 'hour') {
       setHours(value);
@@ -55,6 +63,16 @@ const Timer = () => {
         setSeconds(value);
       }
     }
+  };
+
+  const normalizeTime = (hours, minutes, seconds) => {
+    const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+    const normalizedHours = Math.floor(totalSeconds / 3600);
+    const normalizedMinutes = Math.floor((totalSeconds % 3600) / 60);
+    const normalizedSeconds = totalSeconds % 60;
+    setHours(normalizedHours);
+    setMinutes(normalizedMinutes);
+    setSeconds(normalizedSeconds);
   };
 
   const startStopTimer = () => {
@@ -90,7 +108,7 @@ const Timer = () => {
       </div>
 
       <button className={TimerCss.button} onClick={startStopTimer}>
-        {run ? 'Pause' : 'Start'}
+        {run && (hours > 0 || minutes > 0 || seconds > 0) ? 'Pause' : 'Start'}
       </button>
     </div>
   );
